@@ -6,6 +6,7 @@ import fr.test.dao.TweetRepository;
 import fr.test.dto.KafkaResponse;
 import fr.test.dto.TweetDto;
 import fr.test.dto.TwitterResponseDTO;
+import fr.test.enumeration.TypeMessagerieBus;
 import fr.test.mapper.TweetMapper;
 import fr.test.model.TweetEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,11 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,10 +47,25 @@ public class TwitterServiceImpl {
     public TwitterResponseDTO getAllRecentTwitter(String userTwitterId){
         TwitterResponseDTO twitterResponseDTO= twitterClient.getAllRecentTwitter(userTwitterId);
         List<TweetEntity> entities = tweetMapper.tweetDtosToTweetEntitys(twitterResponseDTO.data());
-        List<KafkaResponse> kafkaResponses = entities.stream().map(kafkaClient::sendTweet).collect(Collectors.toList());
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(2,2,3600, TimeUnit.MINUTES,new LinkedBlockingDeque<>());
+        Arrays.asList(TypeMessagerieBus.KAFKA,TypeMessagerieBus.SPARK).forEach(typeMessagerieBus ->
+                threadPoolExecutor.execute(()->{
+                    switch (typeMessagerieBus){
+                        case KAFKA -> this.pushTweetOnKafka(entities);
+                        case SPARK -> {}
+                    }
+                }));
+
         log.info(" taille des entité {} : ",entities.size());
         tweetRepository.saveAll(entities);
         return  twitterResponseDTO;
+    }
+    private void pushTweetOnKafka(List<TweetEntity> tweetEntities){
+        List<KafkaResponse> kafkaResponses = tweetEntities.stream().map(kafkaClient::sendTweet).toList();
+        log.info("fin de l'implementation kafka");
+    }
+    private void pushTweetOnSpark(List<TweetEntity> tweetEntities){
+        //todo : implementation spark
     }
 
 

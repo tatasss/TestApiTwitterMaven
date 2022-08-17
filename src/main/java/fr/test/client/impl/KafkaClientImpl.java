@@ -19,6 +19,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Component
@@ -28,10 +30,9 @@ public class KafkaClientImpl implements KafkaClient {
     private KafkaTemplate<String,TweetEntity> tweeterKafkaTemplate;
 
     @Override
-    public KafkaResponse sendTweet(TweetEntity tweetEntity) {
+    public KafkaResponse sendTweet(TweetEntity tweetEntity){
         ListenableFuture<SendResult<String, TweetEntity>> future =
                 tweeterKafkaTemplate.send("tweet", tweetEntity);
-        final KafkaResponse[] kafkaResponse = new KafkaResponse[1];
         LocalDateTime beforeSenddate= LocalDateTime.now();
         future.addCallback(new ListenableFutureCallback<SendResult<String, TweetEntity>>() {
 
@@ -46,15 +47,20 @@ public class KafkaClientImpl implements KafkaClient {
                 log.info("durée de l'envoie {} ns ",diff.getNano());
                 log.info("durée de l'envoie {} ms ",Math.abs(diff.getNano()/1000000));
                 log.info("durée de l'envoie {} s ",diff.getSeconds());
-                kafkaResponse[0] = new KafkaResponse(result.getProducerRecord(),result.getRecordMetadata(),"ok");
+
             }
             @Override
             public void onFailure(Throwable ex) {
                 log.error("Unable to send message=["
                         + tweetEntity.getText() + "] due to : " + ex.getMessage());
-                kafkaResponse[0] = new KafkaResponse(null,null,"Unable to send message=["
-                        + tweetEntity.getText() + "] due to : " + ex.getMessage());            }
+                 }
         });
-        return kafkaResponse[0];
+        try {
+            SendResult<String, TweetEntity> result = future.get();
+            return new KafkaResponse(result.getProducerRecord(),result.getRecordMetadata(),"ok");
+        }catch ( ExecutionException| InterruptedException e){
+            log.error("exception when the kafka appel : ",e);
+            return new KafkaResponse(null,null, "error for tweet" +tweetEntity.getId()+" : "+e.getMessage());
+        }
     }
 }

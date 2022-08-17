@@ -3,6 +3,8 @@ package fr.test.client;
 import fr.test.dto.KafkaResponse;
 import fr.test.model.TweetEntity;
 
+import java.util.concurrent.ExecutionException;
+
 public interface KafkaClient {
     KafkaResponse sendTweet(TweetEntity tweetEntity);
 }

@@ -17,3 +17,6 @@ l'objectif de ce projet est de mettre en place une application simple, qui lit l
 - <https://www.mongodb.com/try/download/community>
 - _liens pour spark_
 
+#### visualisation de l'api
+
+un swagger dans le cadre du projet a été mise en place, en lançant le projet il suffit d'aller sur l'url <http://localhost:9898/swagger-ui.html>

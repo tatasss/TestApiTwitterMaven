@@ -33,7 +33,7 @@ public class TwitterControllerImpl implements TwitterController {
     }
 
     @Override
-    @PostMapping("/tweet")
+    //@PostMapping("/tweet")
     public ResponseEntity<String> postAtweet(@RequestBody String text) {
         return ResponseEntity.ok(twitterService.postTweet(text));
     }
