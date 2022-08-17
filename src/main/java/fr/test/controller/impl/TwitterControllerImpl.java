@@ -1,6 +1,6 @@
-package fr.test.controler.impl;
+package fr.test.controller.impl;
 
-import fr.test.controler.TwitterController;
+import fr.test.controller.TwitterController;
 import fr.test.dto.TweetDto;
 import fr.test.service.TwitterServiceImpl;
 import fr.test.dto.TwitterResponseDTO;

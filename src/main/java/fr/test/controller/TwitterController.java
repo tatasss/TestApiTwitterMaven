@@ -1,9 +1,8 @@
-package fr.test.controler;
+package fr.test.controller;
 
 import fr.test.dto.TweetDto;
 import fr.test.dto.TwitterResponseDTO;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
