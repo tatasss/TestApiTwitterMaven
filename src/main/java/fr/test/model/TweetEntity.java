@@ -14,4 +14,6 @@ public class TweetEntity {
     private String id;
 
     private String text;
+    private int countWorld;
+    private boolean isSpark;
 }
